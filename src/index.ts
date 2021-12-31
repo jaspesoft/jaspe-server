@@ -1,5 +1,6 @@
 import express = require("express");
 import cors = require("cors");
+import bodyParser = require("body-parser");
 
 export default class ServerExpress {
   private app: express.Application;
@@ -25,8 +26,10 @@ export default class ServerExpress {
 
   public start(port: number): void {
     this.app.disable("x-powered-by");
-    this.app.use(express.json());
     this.app.use(cors(this.getCors()));
+
+    this.app.use(bodyParser.json());
+    this.app.use(bodyParser.urlencoded({ extended: false }));
 
     this.app.listen(port, () => {
       console.log(`⚡️[server]: Server running on port ${port}`);
