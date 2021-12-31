@@ -4,10 +4,21 @@ import bodyParser = require("body-parser");
 
 export default class ServerExpress {
   private app: express.Application;
-  private corsOption: cors.CorsOptions;
 
   constructor() {
     this.app = express();
+    this.app.disable("x-powered-by");
+    this.app.use(bodyParser.json());
+    this.app.use(bodyParser.urlencoded({ extended: false }));
+
+    this.app.use(
+      cors({
+        origin: "*",
+        methods: "GET, HEAD, PUT, POST, DELETE",
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
+      })
+    );
   }
 
   static instance(): ServerExpress {
@@ -20,31 +31,20 @@ export default class ServerExpress {
   }
 
   public setCors(option: cors.CorsOptions): ServerExpress {
-    this.corsOption = option;
+    this.app.use(cors(option));
     return this;
   }
 
-  public start(port: number): void {
-    this.app.disable("x-powered-by");
-    this.app.use(cors(this.getCors()));
+  public setUse(params: any) {
+    this.app.use(params);
+    return this;
+  }
 
-    this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: false }));
+  public start(port: string): void {
+    this.app.set("port", port);
 
     this.app.listen(port, () => {
       console.log(`⚡️[server]: Server running on port ${port}`);
     });
-  }
-
-  private getCors(): cors.CorsOptions {
-    if (!this.corsOption) {
-      return {
-        origin: "*",
-        methods: "GET, HEAD, PUT, POST, DELETE",
-        preflightContinue: false,
-        optionsSuccessStatus: 204,
-      };
-    }
-    return this.corsOption;
   }
 }
